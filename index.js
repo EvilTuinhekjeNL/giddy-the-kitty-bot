@@ -1,7 +1,8 @@
-import { FlagGame } from './flagGame.js';
-import { areEqual } from './areEqual.js';
-import { emojiFacepalm } from './emojis.js';
 import TelegramBot from 'node-telegram-bot-api/lib/telegram.js';
+
+import { FlagGame } from './src/games/flagGame.js';
+import { areEqual } from './src/helpers/areEqual.js';
+import { emojiFacepalm } from './src/helpers/emojis.js';
 import { TOKEN } from './api_key.js';
 
 // Create a bot that uses 'polling' to fetch new updates
@@ -68,11 +69,11 @@ bot.onText(/\/gok (.+)/, async (msg, match) => {
 });
 
 bot.on('message', (msg) => {
-  const { from, chat, text } = msg;
+  const { from, chat, text, sticker } = msg;
   if(from.is_bot){
     return;
   }
-  logEntry(from.first_name, text, chat.title);
+  logEntry(from.first_name, text || sticker.emoji, chat.title);
 });
 
 const logEntry = (firstName, text, title) => console.log(`${firstName} schreef: "${text}" in ${title}`);

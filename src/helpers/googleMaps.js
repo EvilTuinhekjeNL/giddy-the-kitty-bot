@@ -1,4 +1,4 @@
-import { GOOGLE_KEY } from "./api_key.js";
+import { GOOGLE_KEY } from "../../api_key.js";
 
 export const calculateDistance = async (from, to) =>{
 

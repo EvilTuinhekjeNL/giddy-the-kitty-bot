@@ -1,6 +1,6 @@
-import { countries } from "./countries.js";
-import { areEqual } from "./areEqual.js";
-import { calculateDistance } from "./googleMaps.js";
+import { countries } from "../assets/countries.js";
+import { areEqual } from "../helpers/areEqual.js";
+import { calculateDistance } from "../helpers/googleMaps.js";
 
 export class FlagGame{
 
@@ -17,7 +17,6 @@ export class FlagGame{
     }
 
     startGame(){
-        console.log("Flag is: "+this.selectedCountry.flag);
         return this.selectedCountry.flag;
     }
     
