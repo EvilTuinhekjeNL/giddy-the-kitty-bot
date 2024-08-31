@@ -1,0 +1,22 @@
+{
+  "name": "giddy-the-kitty-bot",
+  "version": "1.0.0",
+  "description": "Giddy bot telegram",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "npm run test"
+  },
+  "keywords": [
+    "telegram",
+    "giddy",
+    "fun"
+  ],
+  "author": "RobUithol@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "nodemon": "^3.1.4"
+  }
+}

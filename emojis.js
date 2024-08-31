@@ -1,0 +1,1 @@
+export const emojiFacepalm = '🤦‍♂️' // original U+1F926
