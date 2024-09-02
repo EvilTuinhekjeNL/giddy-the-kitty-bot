@@ -34,8 +34,7 @@ export class FlagGame{
         }
         this.guessAmount++;
 
-        const { countryName, countryCode, formattedAddress } = this.selectedCountry;
-        console.log(formattedAddress);
+        const { countryCode, formattedAddress } = this.selectedCountry;
         let guesstimateCountry;
         try { 
          guesstimateCountry = await getCountry(guesstimate);
@@ -44,7 +43,7 @@ export class FlagGame{
          console.error(error);
         }
 
-        if(guesstimateCountry && this.selectedCountry.formattedAddress && areEqual(guesstimateCountry.formattedAddress, this.selectedCountry.formattedAddress)) {
+        if(guesstimateCountry && formattedAddress && areEqual(guesstimateCountry.formattedAddress, formattedAddress)) {
          return this.winGame(player);
         }
         if(await this.isClose(guesstimateCountry, this.selectedCountry) || areEqual(countryCode, guesstimate)){
@@ -81,9 +80,8 @@ export class FlagGame{
             const distance = await calculateDistance(this.lastGuess.geometry, this.selectedCountry.geometry);
             return distance ? `je zit er ${distance} km van af` : `kon geen pad vinden tussen het land en ${guess}`;
          }catch(error){
-            //console.error(error);
+            return `Kun je mij uitleggen waar ${guess} ligt..?`;
          }
-         return `Kun je mij uitleggen waar ${guess} ligt..?`;
      }
 
      async isClose(guesstimate, answer){
@@ -95,9 +93,8 @@ export class FlagGame{
          console.info(`the distance between ${guesstimate.formattedAddress} and ${answer.formattedAddress} is ${distance}`);
          return distance <= 0.1;
       }catch(error){
-         //console.log(error);
+         return false;
       }
-      return false;
      }
 
 }
