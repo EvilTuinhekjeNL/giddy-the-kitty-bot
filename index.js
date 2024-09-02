@@ -12,7 +12,7 @@ bot.on('polling_error', console.log);
 const commands = ['help', 'start', 'geef-op'];
 let instances = {};
 
-bot.onText(/\/giddy (.+)/, (msg, match) => {
+bot.onText(/\/giddy (.+)/, async(msg, match) => {
   const { chat, text, from} = msg;
   const command = match[1];
   logEntry(from.first_name, text || '[foto/sticker]', chat.title || 'private chat');
@@ -24,13 +24,12 @@ bot.onText(/\/giddy (.+)/, (msg, match) => {
     }
     if (areEqual(command, commands[1])){ // start
       const flagGameInstance = instances[chat.id] || undefined;
-      console.log(flagGameInstance);
       if(flagGameInstance && !flagGameInstance.isGuessed){ // Game loopt al
         return bot.sendMessage(chat.id, 'Je hebt al een game lopen, wil je die opgeven? Stuur dan `/giddy geef-op`');
       }
       if(!flagGameInstance || flagGameInstance.isGuessed){
         instances[chat.id] = new FlagGame();
-        const flag = instances[chat.id].startGame();
+        const flag = await instances[chat.id].startGame();
         return bot.sendPhoto(chat.id, flag);
       }      
     }
@@ -60,7 +59,7 @@ bot.onText(/\/gok (.+)/, async (msg, match) => {
 
   const playerName = from.first_name || from.username;
 
-  if(instances[chat.id].guess(guess, playerName)){
+  if(await instances[chat.id].guess(guess, playerName)){
     return bot.sendMessage(id, `winner winner, chicken dinner! Goed gegokt ${playerName}! Het was inderdaad ${instances[chat.id].getAnswer()}! Je hebt hem gevonden na een totaal van ${instances[chat.id].getGuessAmount()} ${instances[chat.id].getGuessAmount() > 1 ? 'gokken': 'gok'}`);
   }
   else{
@@ -70,10 +69,10 @@ bot.onText(/\/gok (.+)/, async (msg, match) => {
 
 bot.on('message', (msg) => {
   const { from, chat, text, sticker } = msg;
-  if(from.is_bot){
+  if(from.is_bot || text && (text.includes('gok') || text.includes('/giddy'))){
     return;
   }
-  logEntry(from.first_name, text || sticker.emoji, chat.title);
+  logEntry(from.first_name, text || sticker.emoji || 'undefined', chat.title);
 });
 
 const logEntry = (firstName, text, title) => console.log(`${firstName} schreef: "${text}" in ${title}`);

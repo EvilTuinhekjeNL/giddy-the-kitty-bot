@@ -1,27 +1,29 @@
 import { GOOGLE_KEY } from "../../api_key.js";
 
-export const calculateDistance = async (from, to) =>{
+export const calculateDistance = async (guesstimate, answer) =>{
 
-    const fromLoc = await getCoordinates(from);
-    const toLoc = await getCoordinates(to);
+    const toLoc = guesstimate.location;
+    const fromLoc = answer.location;
 
     const distance = distanceCalculation(fromLoc.lat, fromLoc.lng, toLoc.lat, toLoc.lng);
-    return distance.toFixed(1)+" km";  
+    return distance.toFixed(1);  
 }
 
-async function getCoordinates(country){
-    let response = await fetchCall(`https://maps.googleapis.com/maps/api/geocode/json?address=${country}&key=${GOOGLE_KEY}`);
+export const getCountry = async(country) => {
+    let response = await fetchCall(country);
     if(response.status === "OK"){
-        const { lat, lng } = response.results[0].geometry.location;
-        return {lat, lng} 
+        const{ formatted_address, geometry } = response.results[0];
+        return {formattedAddress: formatted_address, geometry };
     }else{
-        return {};
+        console.error(`Fetch failed for: ${country}`);
     }
 }
 
-async function fetchCall(apiString){
+async function fetchCall(country){
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${country}&key=${GOOGLE_KEY}&language=NL`;
     try{
-        let response = await fetch(apiString);
+        console.info(url);
+        let response = await fetch(url);
         let responseJson = await response.json();
         return responseJson;
     }catch(error){

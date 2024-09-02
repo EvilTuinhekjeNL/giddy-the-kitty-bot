@@ -1,6 +1,6 @@
 import { countries } from "../assets/countries.js";
 import { areEqual } from "../helpers/areEqual.js";
-import { calculateDistance } from "../helpers/googleMaps.js";
+import { calculateDistance, getCountry } from "../helpers/googleMaps.js";
 
 export class FlagGame{
 
@@ -8,6 +8,7 @@ export class FlagGame{
     isGuessed;
     winner;
     guessAmount;
+    lastGuess;
 
     constructor(){
         this.selectedCountry = countries[Math.floor(Math.random() * countries.length)];
@@ -16,22 +17,40 @@ export class FlagGame{
         this.guessAmount = 0;
     }
 
-    startGame(){
+    async startGame(){
+        try{
+         const { formattedAddress, geometry } = await getCountry(this.selectedCountry.countryName);
+         this.selectedCountry.formattedAddress = formattedAddress;
+         this.selectedCountry.geometry = geometry;
+        }catch(error){  
+         console.error(error);
+        }
         return this.selectedCountry.flag;
     }
     
-    guess(guesstimate, player){
+    async guess(guesstimate, player){
         if(!guesstimate){
             return false;
         }
         this.guessAmount++;
 
-        const { countryName, countryCode } = this.selectedCountry;
+        const { countryName, countryCode, formattedAddress } = this.selectedCountry;
+        console.log(formattedAddress);
+        let guesstimateCountry;
+        try { 
+         guesstimateCountry = await getCountry(guesstimate);
+         this.lastGuess = guesstimateCountry;
+        }catch(error){
+         console.error(error);
+        }
 
-        if(areEqual(countryName, guesstimate) || areEqual(countryCode, guesstimate) || this.isClose(guesstimate, countryName)){
-            this.isGuessed = true;
-            this.winner = player;
-        }   
+        if(guesstimateCountry && this.selectedCountry.formattedAddress && areEqual(guesstimateCountry.formattedAddress, this.selectedCountry.formattedAddress)) {
+         return this.winGame(player);
+        }
+        if(await this.isClose(guesstimateCountry, this.selectedCountry) || areEqual(countryCode, guesstimate)){
+         return this.winGame(player);
+        }
+         
         return this.isGuessed;
      }
 
@@ -44,22 +63,41 @@ export class FlagGame{
      }
 
      getAnswer(){
-        return this.selectedCountry.countryName;
+        return this.selectedCountry?.formattedAddress || this.selectedCountry.countryName;
      }
 
      getGuessAmount(){
         return this.guessAmount;
      }
 
-     async guessDistance(guess){
-        const distance = await calculateDistance(guess, this.selectedCountry.countryName);
-        return distance ? `je zit er ${distance} van af` : `kon geen pad vinden tussen het land en ${guess}`;
+     winGame(player){
+      this.isGuessed = true;
+      this.winner = player;
+      return true;
      }
 
-     isClose(guesstimate, countryName){
-        let nameArray = countryName.replace(',', '').toLowerCase().split(' ');
-        nameArray = nameArray.filter( word => word!== 'and');
-        return nameArray.includes(guesstimate.toLowerCase());
+     async guessDistance(guess){
+         try{ 
+            const distance = await calculateDistance(this.lastGuess.geometry, this.selectedCountry.geometry);
+            return distance ? `je zit er ${distance} km van af` : `kon geen pad vinden tussen het land en ${guess}`;
+         }catch(error){
+            //console.error(error);
+         }
+         return `Kun je mij uitleggen waar ${guess} ligt..?`;
+     }
+
+     async isClose(guesstimate, answer){
+      try{
+         const distance = await calculateDistance(guesstimate.geometry, answer.geometry);
+         if(isNaN(parseFloat(distance))){
+          return false;
+         }
+         console.info(`the distance between ${guesstimate.formattedAddress} and ${answer.formattedAddress} is ${distance}`);
+         return distance <= 0.1;
+      }catch(error){
+         //console.log(error);
+      }
+      return false;
      }
 
 }
